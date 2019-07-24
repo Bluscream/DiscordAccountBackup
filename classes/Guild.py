@@ -1,25 +1,32 @@
 import discord
-from base64 import b64encode
 from classes.User import User
 from utils import log
 
 class Guild(object):
     id = 0
+    name = ""
     owner = None
     invite_urls = []
+
+    def __init__(self, guild : discord.guild.Guild):
+        self.id = guild.id
+        self.name = guild.name
+        if guild.owner: self.owner = User(guild.owner)
+
     async def createInvite(self, channel : discord.TextChannel):
         invite = await channel.create_invite(reason="", max_age=0, max_uses=0, temporary=False, unique=False)
         log("Created Invite", invite.code, "for", invite.guild.name)
-        return invite.url
-    def __init__(self, guild : discord.guild.Guild, bot : discord.Client, singleInviteOnly=True):
-        self.id = guild.id
-        if guild.owner: self.owner = User(guild.owner)
+        self.invite_urls.append(invite.url)
+
+    async def getInvites(self, guild : discord.guild.Guild, singleInviteOnly=True):
         if guild.me.guild_permissions.create_instant_invite:
-                self.invite_urls.append(self.createInvite(guild.system_channel))
-                if singleInviteOnly: return
+            if guild.system_channel:
+                if guild.system_channel.permissions_for(guild.me).create_instant_invite:
+                    await self.createInvite(guild.system_channel)
+                    if singleInviteOnly: return self.invite_urls
         else:
             for channel in guild.channels:
-                perms = channel.permissions_for(guild.me)
-                if discord.permissions.Permissions.create_instant_invite in perms:
-                    self.invite_urls.append(self.createInvite(channel))
-                    if singleInviteOnly: return
+                if channel.permissions_for(guild.me).create_instant_invite:
+                    await self.createInvite(channel)
+                    if singleInviteOnly: return self.invite_urls
+        return self.invite_urls

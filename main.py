@@ -1,8 +1,11 @@
+import asyncio
+
 import discord, json, os
 from config import *
 from utils import saveJSON, loadJSON, MyEncoder, log
 from classes.User import User, Me
 from classes.Guild import Guild
+# from time import sleep
 file = os.path.basename(__file__)
 path = os.path.dirname(os.path.realpath(__file__))
 log(file, "START")
@@ -39,7 +42,11 @@ class MyClient(discord.Client):
         guilds = list()
         for guild in self.guilds:
             log("Guild", guild.name, guild.id)
-            if guild: guilds.append(Guild(guild, self))
+            if not guild or not guild.me: continue
+            _guild = Guild(guild)
+            # await _guild.getInvites(guild, singleInviteOnly=True) # TODO: FIX UNVERIFICATION
+            await asyncio.sleep(sleep_between_invites) # sleep(sleep_between_invites)
+            guilds.append(_guild)
         savePath = os.path.join(self.backupPath, "guilds.json")
         saveJSON(savePath, guilds, encoder=MyEncoder)
         log("Backed up", len(guilds), "guilds to", savePath)
