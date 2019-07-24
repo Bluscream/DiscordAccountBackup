@@ -1,6 +1,7 @@
 import discord
 from classes.User import User
-from utils import log
+from classes.Message import Message
+from util import log
 
 class Guild(object):
     id = 0
@@ -18,7 +19,13 @@ class Guild(object):
         log("Created Invite", invite.code, "for", invite.guild.name)
         self.invite_urls.append(invite.url)
 
-    async def getInvites(self, guild : discord.guild.Guild, singleInviteOnly=True):
+    async def getInvite(self, guild : discord.guild.Guild):
+        for channel in guild.text_channels:
+            msgs = channel.history()
+            for msg in msgs:
+                _msg = Message(msg)
+
+    async def createInvites(self, guild : discord.guild.Guild, singleInviteOnly=True):
         if guild.me.guild_permissions.create_instant_invite:
             if guild.system_channel:
                 if guild.system_channel.permissions_for(guild.me).create_instant_invite:
