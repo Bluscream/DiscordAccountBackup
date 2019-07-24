@@ -13,7 +13,7 @@ class Guild(object):
         return invite.url
     def __init__(self, guild : discord.guild.Guild, bot : discord.Client, singleInviteOnly=True):
         self.id = guild.id
-        self.owner = User(guild.owner)
+        if guild.owner: self.owner = User(guild.owner)
         if guild.me.guild_permissions.create_instant_invite:
                 self.invite_urls.append(self.createInvite(guild.system_channel))
                 if singleInviteOnly: return

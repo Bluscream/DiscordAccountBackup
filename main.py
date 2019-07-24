@@ -38,9 +38,11 @@ class MyClient(discord.Client):
         log("Backing up", len(self.guilds), "guilds")
         guilds = list()
         for guild in self.guilds:
-            guilds.append(Guild(guild, self))
+            log("Guild", guild.name, guild.id)
+            if guild: guilds.append(Guild(guild, self))
         savePath = os.path.join(self.backupPath, "guilds.json")
         saveJSON(savePath, guilds, encoder=MyEncoder)
+        log("Backed up", len(guilds), "guilds to", savePath)
 
 
 client = MyClient()
